@@ -23,6 +23,7 @@ USER_AGENTS = [
 scheduled_jobs = {}
 
 def run_browser_session(url, click_count, wait_time):
+    print(f"🧪 Starting browser session: {url} | {click_count} clicks | wait {wait_time}s")
     user_agent = random.choice(USER_AGENTS)
     options = Options()
     options.add_argument("--incognito")
@@ -34,13 +35,16 @@ def run_browser_session(url, click_count, wait_time):
     options.add_argument('--user-data-dir=/tmp/chrome-user-data')
 
     try:
-        for _ in range(click_count):
+        for i in range(click_count):
+            print(f"🌐 Opening Chrome | click {i+1}")
             driver = webdriver.Chrome(options=options)
             driver.get(url)
+            print("📍 Page loaded, waiting...")
             time.sleep(wait_time)
             driver.quit()
-            time.sleep(1)
+            print("🛑 Browser closed")
 
+        print("✅ Appending success log")
         run_logs.append({
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "url": url,
@@ -48,14 +52,14 @@ def run_browser_session(url, click_count, wait_time):
         })
 
     except Exception as e:
+        print(f"❌ Error in browser session: {e}")
         run_logs.append({
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "url": url,
             "status": f"❌ Error: {str(e)}"
         })
 
-@app.route('/run', methods=['POST'])
-@app.route('/run', methods=['POST'])
+
 @app.route('/run', methods=['POST'])
 def run_script():
     try:
