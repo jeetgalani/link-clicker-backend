@@ -23,7 +23,8 @@ USER_AGENTS = [
 scheduled_jobs = {}
 
 def run_browser_session(url, click_count, wait_time):
-    print(f"🧪 Starting browser session: {url} | {click_count} clicks | wait {wait_time}s")
+    print(f"🧪 Starting session: {url} | {click_count} clicks | wait {wait_time}s", flush=True)
+
     user_agent = random.choice(USER_AGENTS)
     options = Options()
     options.add_argument("--incognito")
@@ -36,28 +37,33 @@ def run_browser_session(url, click_count, wait_time):
 
     try:
         for i in range(click_count):
-            print(f"🌐 Opening Chrome | click {i+1}")
+            print(f"➡️ Launching Chrome ({i+1}/{click_count})...", flush=True)
             driver = webdriver.Chrome(options=options)
-            driver.get(url)
-            print("📍 Page loaded, waiting...")
-            time.sleep(wait_time)
-            driver.quit()
-            print("🛑 Browser closed")
+            print("✅ Chrome launched", flush=True)
 
-        print("✅ Appending success log")
+            driver.get(url)
+            print("🌐 Navigated to page, sleeping...", flush=True)
+            time.sleep(wait_time)
+
+            driver.quit()
+            print("🛑 Browser closed", flush=True)
+            time.sleep(1)
+
         run_logs.append({
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "url": url,
             "status": "✅ Success"
         })
+        print("✅ Appended success log", flush=True)
 
     except Exception as e:
-        print(f"❌ Error in browser session: {e}")
+        print(f"❌ Browser run failed: {e}", flush=True)
         run_logs.append({
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "url": url,
             "status": f"❌ Error: {str(e)}"
         })
+
 
 
 @app.route('/run', methods=['POST'])
@@ -91,7 +97,7 @@ def run_script():
                 scheduled_jobs[url].cancel()
                 del scheduled_jobs[url]
             print(f"🚀 Starting one-time run for {url}")
-            threading.Thread(target=run_browser_session, args=(url, click_count, wait_time)).start()
+            threading.Thread(target=run_browser_session, args=(url, click_count, wait_time), daemon=True).start()
 
         return jsonify({"status": "Script triggered"})
 
