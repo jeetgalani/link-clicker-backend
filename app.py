@@ -6,6 +6,10 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import os
+from datetime import datetime
+
+# In-memory run log
+run_logs = []
 
 app = Flask(__name__)
 CORS(app)
@@ -25,14 +29,30 @@ def run_browser_session(url, click_count, wait_time):
     options.add_argument(f"--user-agent={user_agent}")
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    # options.add_argument('--headless=new')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--headless=new')
+    options.add_argument('--user-data-dir=/tmp/chrome-user-data')
 
-    for _ in range(click_count):
-        driver = webdriver.Chrome(options=options)
-        driver.get(url)
-        time.sleep(wait_time)
-        driver.quit()
-        time.sleep(1)
+    try:
+        for _ in range(click_count):
+            driver = webdriver.Chrome(options=options)
+            driver.get(url)
+            time.sleep(wait_time)
+            driver.quit()
+            time.sleep(1)
+
+        run_logs.append({
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "url": url,
+            "status": "✅ Success"
+        })
+
+    except Exception as e:
+        run_logs.append({
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "url": url,
+            "status": f"❌ Error: {str(e)}"
+        })
 
 @app.route('/run', methods=['POST'])
 @app.route('/run', methods=['POST'])
@@ -74,6 +94,10 @@ def run_script():
     except Exception as e:
         print("❌ ERROR OCCURRED:", e)
         return jsonify({"error": str(e)}), 500
+
+@app.route('/logs', methods=['GET'])
+def get_logs():
+    return jsonify(run_logs[-10:])  # return last 10 logs
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5001))
