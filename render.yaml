@@ -8,8 +8,4 @@ services:
     startCommand: python app.py
     envVars:
       - key: PLAYWRIGHT_BROWSERS_PATH
-        value: 0
-      - key: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD
-        value: "false"
-      - key: PORT
-        value: 5000
+        value: /opt/render/.cache/ms-playwright
