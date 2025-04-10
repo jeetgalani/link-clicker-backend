@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: link-clicker-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 5000

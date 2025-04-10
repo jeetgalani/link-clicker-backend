@@ -1,17 +1,20 @@
-# Use the official Playwright base image with Python
-FROM mcr.microsoft.com/playwright/python:v1.41.2
+# Use the latest Playwright Docker image with Python
+FROM mcr.microsoft.com/playwright/python:v1.51.0-jammy
 
-# Set working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy everything
+# Copy the application files into the container
 COPY . .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose your app port (Render uses this to detect the service)
+# Install Playwright browsers and dependencies
+RUN playwright install --with-deps
+
+# Expose the port the application runs on
 EXPOSE 5000
 
-# Start your Flask app
+# Command to run the application
 CMD ["python", "app.py"]
